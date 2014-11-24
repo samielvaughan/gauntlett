@@ -1,0 +1,19 @@
+The Gauntlett Webserver
+(c) Alan Laughter
+Licensed under the GPL v3
+
+This program aims to create a simple, universal, webserver application which can maintain, create, and load any type of website from predefined functions using a dictionary of databases, one for each website
+
+The site requires the sites_available file in /config to contain a list of all domains the site will run on
+
+first it takes each line in the file and makes a database from it and a login object, the login object uses tables in the same database as the website
+
+next it fills the website with default pages, an index, an admin page, a login page, and a post page
+
+while running it gets a request and the type of request is proccessed through the server using the domain, page, method, permissions, and keywords
+
+after pulling all matching pages from the domain, page, and method it retrieves the cookie and reads the data from said cookie to determine if the user is authorized to see that page, if the cookie is "none" or if the permissions are 0 then the 0 page is returned, otherwise it returns the highest number permission not above the permission of the user
+
+this is then formatted using the web.py templator using the relevant information from another table (this hasn't been implemented as of b0)
+
+the webpage is finally returned to the user as is, if any errors are encountered then a 404 is returned instead
