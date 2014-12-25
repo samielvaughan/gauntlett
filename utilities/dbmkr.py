@@ -17,13 +17,15 @@ class database(object):
         """This connects to the database
         """
         self.con = sql.connect(current_database, check_same_thread=False)
-        self.StatCom = {"create":"CREATE TABLE %s (%s)",
+        self.StatCom = {"create":"CREATE TABLE IF NOT EXISTS %s (%s)",
                         "drop"  :"DROP TABLE IF EXISTS %s"           ,
                         "new"   :"CREATE TABLE %s (%s)"              ,
                         "insert":"INSERT INTO %s VALUES (%s)"        ,
                         "select":"SELECT * FROM %s %s"               ,
+                        "selmax":"SELECT MAX(%s) from %s"            ,
                         "delete":"DELETE FROM %s WHERE %s=?"         ,
-                        "update":"UPDATE %s SET %s WHERE %s = ?"     }
+                        "update":"UPDATE %s SET %s WHERE %s = ?"     ,
+                        "tables":"SELECT name FROM sqlite_master where type='table';"}
 
     def __sanitize__(self, s, errors="strict"):
         """ This sanitizes any user created information
@@ -50,32 +52,53 @@ class database(object):
         return ",".join(["?"] * length)
     
     def __get_fields__(self, table):
+        table = "`%s`" % (table)
         with self.con:
             cur = self.con.cursor()
             command = "SELECT * FROM %s" % (table,)
             rows = cur.execute(command)
         return rows            
 
-    def create(self, table, columns):
-        """ this creates tables if they do not exist
-            it's makes new databases and reconnects with old ones
-        """
+    def __execute__(self, command):
         try:
-            columns = self.__sanitize__(columns)
             with self.con:
                 cur = self.con.cursor()
-
-                cur.execute("SELECT NAME FROM sqlite_master \
-                    WHERE TYPE = 'table';")
-                tables = cur.fetchall()
-                if table not in tables:
-                    cur.execute(self.StatCom["create"] % (table, columns))
-                    return True
-                return False
+                cur.execute(command)
+            return True
         except:
             return False
 
+    def tables(self):
+        try:
+            with self.con:
+                cur = self.con.cursor()
+                cur.execute(self.StatCom["tables"])
+            return cur.fetchall()[0]
+        except:
+            return []
+
+    def create(self, table, columns):
+        table = "`%s`" % (table)
+
+        """ this creates tables if they do not exist
+            it makes new databases and reconnects with old ones
+        """
+        
+        
+        columns = self.__sanitize__(columns)
+        with self.con:
+            cur = self.con.cursor()
+            if table not in self.tables():
+                print self.StatCom["create"] % (table, columns)
+                cur.execute(self.StatCom["create"] % (table, columns))
+                return True
+            return False
+        #except:
+        #    return False
+
     def recreate(self, table, columns):
+        table = "`%s`" % (table)
+
         """ This destroys old databases and recreates them
         """
         try:
@@ -89,6 +112,8 @@ class database(object):
             return False
 
     def insert(self, table, columns):
+        table = "`%s`" % (table)
+
         """ Insert into columns, after it sanitizes the inputs            
         """
         try:
@@ -105,7 +130,36 @@ class database(object):
         except:
             return False
 
+    def selmax(self, table, column):
+        table = "`%s`" % (table)
+
+        #try:
+        with self.con:
+            cur = self.con.cursor()
+            command = self.StatCom["selmax"] % (table, column)
+            cur.execute(command)
+            row = cur.fetchall()
+            del cur
+        return row
+        #except:
+        #    return []
+
+    def select_all(self, table):
+        table = "`%s`" % (table)
+
+        try:
+            with self.con:
+                cur = self.con.cursor()
+                command = "SELECT * FROM %s" % (table)
+                cur.execute(command)
+                rows = cur.fetchall()
+            return rows
+        except:
+            return []
+
     def select(self, table, keys, keywords):
+        table = "`%s`" % (table)
+
         """This returns information from the database in the 
             form of a list of tuples
         """
@@ -127,16 +181,22 @@ class database(object):
             return []
 
     def query_first(self, table, key, keyword):
+        table = "`%s`" % (table)
+
         try:
             return self.select(table, key, keyword)[0]
         except:
             return []
 
     def query_last(self, table, key, keyword):
+        table = "`%s`" % (table)
+
         rows = self.select(table, key, keyword)
         return rows[len(rows)-1]
 
     def drop(self, table):
+        table = "`%s`" % (table)
+
         """this drops whole tables"""
         try:
             with self.con:
@@ -147,6 +207,8 @@ class database(object):
             return False
 
     def delete(self, table, key, keyword):
+        table = "`%s`" % (table)
+
         try:
             with self.con:
                 cur = self.con.cursor()
@@ -156,8 +218,6 @@ class database(object):
         except:
             return False
     
-
-
 
 
 

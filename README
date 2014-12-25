@@ -2,18 +2,21 @@ The Gauntlett Webserver
 (c) Alan Laughter
 Licensed under the GPL v3
 
-This program aims to create a simple, universal, webserver application which can maintain, create, and load any type of website from predefined functions using a dictionary of databases, one for each website
+This program aims to create a simple, universal, webserver application which can maintain, create, and load any type of website from predefined functions using a list of directories, one for each website, eachw tih it's own database and each page with it's own table
 
-The site requires the sites_available file in /config to contain a list of all domains the site will run on
+The site requires the sites_available file in /config to contain a list of all domains the site will run on, please add all domains plus extension, exp: example.com
+not www.example.com, the name and extension only
 
-first it takes each line in the file and makes a database from it and a login object, the login object uses tables in the same database as the website
+after setting that up you may pick a website as your main and log into that, however it doesn't matter which one you choose as your default, simply visit example.com/admin
+once there please create a new user, the higher the permissions the better, 5 is webmaster and can create new websites, webpages, and administrators for each website, however no one can administer more than one website, including the webmaster, for security purposes.
 
-next it fills the website with default pages, an index, an admin page, a login page, and a post page
+new files may be uploaded with the next function, this allows you to upload images, videos, webpages, css files, anything you desire, files are sorted and placed into thier appropriate folder, non-executable files such as images and zips, will be stored in the static directory, style sheets may also be found here
 
-while running it gets a request and the type of request is proccessed through the server using the domain, page, method, permissions, and keywords
+directories are as follows:
 
-after pulling all matching pages from the domain, page, and method it retrieves the cookie and reads the data from said cookie to determine if the user is authorized to see that page, if the cookie is "none" or if the permissions are 0 then the 0 page is returned, otherwise it returns the highest number permission not above the permission of the user
+serverroot/example.com/pages/page.html
+serverroot/example.com/static/style/page.css
+serverroot/example.com/static/images/image.png
 
-this is then formatted using the web.py templator using the relevant information from another table (this hasn't been implemented as of b0)
+I am currently working on the 404 page and additional file formats for serving, currently only html will serve, this requires an adjustment in the get method
 
-the webpage is finally returned to the user as is, if any errors are encountered then a 404 is returned instead

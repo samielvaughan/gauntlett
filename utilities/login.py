@@ -17,51 +17,47 @@ class session_controller(object):
     def __init__(self, name):
         self.db = dbmkr.database(name)
         self.db.create('usersessions', "user TEXT, sessoncode TEXT")
-        self.db.create('useraccounts', "user TEXT, type INT, password TEXT, \
+        self.db.create('useraccounts', "user TEXT, site TEXT, type INT, password TEXT, \
             salt TEXT")
-        self.users = [x[0] for x in self.db.__get_fields__('useraccounts')]
 
     def get_users(self):
-        return self.users
+        return [x[0] for x in self.db.__get_fields__('useraccounts')]
 
     def session_in(self, username, sessioncode):
-        info = self.db.select('usersessions', ('user',), [username,])
-        if username not in info:
-            self.db.insert('usersessions', [username, sessioncode])
+        #info = self.db.select('usersessions',('user',),[username,])
+        #if len(info) == 0:
+        self.db.insert('usersessions', [username, sessioncode])
     
     def session_out(self, username,sessioncode):
         
         info = self.db.select('usersessions',('user',),(username,))
-        print "=================="
-        print info
-        print "=================="
         for entry in xrange(len(info)):
-            if info[0] == username:
-                if int(info[1].split(":")[1]) < time.time():
+            if info[entry][0] == username:
+                if int(info[entry][1].split(":")[1]) < time.time():
                     self.db.delete('usersessions', 'name', username)
                     return 0
-                if info[entry]['sessioncode'] == sessioncode:
+                if info[entry][1] == sessioncode:
                     return self.user_type(username)
         return 0
         
         #useraccounts, user, password, salt)
-    def new_user(self, username, AccType, password):
-        if username not in self.users:
+    def new_user(self, username, site, AccType, password):
+        if username not in self.get_users():
             this_salt = uuid.uuid4().hex
             hashed_password = hashlib.sha512(password + this_salt).hexdigest()
             insert_string = username + ", " + str(AccType) + ", " + \
                 hashed_password + ", " + this_salt
-            self.db.insert ('useraccounts', (username, AccType, 
+            self.db.insert ('useraccounts', (username, site, AccType, 
                 hashed_password, this_salt))
 
-    def check_user(self, username, password):
-        info = self.db.select('useraccounts', ('user',), (username,))
-        for entry in xrange(len(info)):
-            if info[0][0] == username:
-                return hashlib.sha512(password + info[0][3]
-                    ).hexdigest() == info[0][2]
+    def check_user(self, username, site, password):
+        info = self.db.select('useraccounts', ('user', 'site'), (username, site))
+        if info[0][0] == username:
+            if hashlib.sha512(password + info[0][4]
+                ).hexdigest() == info[0][3]:
+                return True
         return False
 
     def user_type(self, username):
         info = self.db.select('useraccounts', ('user',), (username,))
-        return info[1]
+        return info[0][2]

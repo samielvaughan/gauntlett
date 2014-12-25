@@ -1,0 +1,67 @@
+body{
+    font-family:sans-serif;
+    size:2;
+    background-image:url(/static/images/background.jpg);
+
+    background-repeat: repeat-y;
+    vlink:#00AA00
+}
+#editor { 
+    height: 500px;
+    width:100%;
+}
+textarea
+{
+    width:94%;
+    border:1%;
+    margin:1%;
+    padding:1%;
+}
+
+.large{
+    display:none;
+}
+#left{
+    color:white;
+}
+#right{
+    color:white;
+}
+
+p{
+    text-indent:5vw;
+}
+#container{
+    max-width:100%
+}
+#header{
+    color:green;
+    float:top;
+    font-size: 8vw;
+}
+#menu{
+    float:top;
+    font-size: 6vw;
+}
+#news_title{
+    font-size: 4vw;
+}
+#news{
+    font-size: 4vw;
+}
+#article{
+    color:white;
+    padding-left: 5%;
+    padding-right: 5%;
+    float:top;
+}
+#image{
+    display:none;
+}
+a{
+    color:green;
+    text-decoration:none;
+}
+a:visited{
+    color:#00ff00;
+}

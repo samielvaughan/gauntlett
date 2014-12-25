@@ -1,0 +1,99 @@
+$def with (var)
+$ lperm = var["perm"]-1
+$code:
+    input_list = var["query"](id=[])
+    if len(input_list) > 0:
+        items = ",".join(input_list.id)
+    else:
+        items = "didn't work"
+    if "page" in var.keys():
+        pagename = var["page"][0]
+        body = var["page"][1]
+    else:
+        pagename =""
+        body = ""
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>admin</title>
+        <link rel="shortcut icon" href="/static/images/favicon.ico"></link>
+        <link rel="icon" type="image/ico" href="res/favicon.ico"></link>
+        <link id = "pagestyle" rel="stylesheet" type="text/css" href="/static/style/large.css"></link>
+    </head>
+    <script type="text/javascript">
+    function layoutHandler(){
+        var styleLink = document.getElementById("pagestyle");
+        if ( /Android|webOS|iPhone|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth < 900){
+            styleLink.setAttribute("href", "/static/style/mob.css");
+        }else{
+            styleLink.setAttribute("href", "/static/style/large.css");
+        }
+    }
+    window.onresize = layoutHandler;
+    layoutHandler();
+    </script>
+<body>
+
+$if var["perm"] >= 3:
+    <div id="left">
+        New User:<br/>
+        <form method="POST" name="newuser" enctype="multipart/form-data" action="/admin">
+            <table>
+                <tr><td><input type="text" name="user" value = "new user"/></td></tr>
+                <tr><td><input type="text" name="password" value = "password"/></td></tr>
+                <tr><td><input type="text" name="site" value = "site"/></td></tr>
+                <tr><td>Permissions: <input type="number" name="permissions" min="0" max="$lperm"></td></tr>
+                <tr><td><input type="submit" name="newuser"/></td></tr>
+            </table>
+        </form>
+        <br/>
+        File upload:<br/>
+        <form method="POST" name="fileupload" enctype="multipart/form-data" action="/admin">
+            <table>
+            <tr><td><input type="file" name="myfile" /></tr></td>
+            <tr><td><input type="submit" name="fileupload" /></tr></td>
+            </table>
+        </form>
+        <br/>
+        <form method="POST" name="getpage" enctype="multipart/form-data" action="/admin">
+            Page Select:
+            <select name="page">
+                $for page in var["pages"]:
+                    <option value="$page">$page</option>
+            </select>
+            <input type="submit" name="getpage"/>
+        </form>
+    </div>
+    <br/>
+    <div id="right">
+        <form method="POST" enctype="mutipart/form-data" action="/admin" id="pageupdate">
+            Page Editor: <input type="text" name="pagename" value="$pagename">
+
+            <input type="submit" name="pageupdate" onclick='mySubmit()'>
+            <input type="hidden" id="body" name="editor" value=""/>
+            <br/><br/>
+            <div id="editor">$body</div>
+    
+            <script src="http://ace.c9.io/build/src/ace.js" type="text/javascript" charset="utf-8"></script>
+            <script>
+                var editor = ace.edit("editor");
+                editor.setTheme("ace/theme/xcode");
+                editor.getSession().setMode("ace/mode/html");
+                function mySubmit(){
+                    document.getElementById("body").value=editor.getValue();
+                    document.getElementById("pageupdate").submit();
+
+                }
+            </script>
+        </form>
+    </div>
+$else:
+    <form method="POST" name="login" enctype="multipart/form-data" action="/admin">
+    <table>
+        <tr><th><label for="username">username</label></th><td><input type="text" id="username" name="username"/><div class="post" style="display: none;"></div></td></tr>
+        <tr><th><label for="password">password</label></th><td><input type="password" id="password" name="password"/><div class="post" style="display: none;"></div></td></tr>
+        <tr><th><label for="Login"></label></th><td><button id="Login" name="Login">Login</button><div class="post" style="display: none;"></div></td></tr>
+    </table>
+    </form>
+</body>
+</html>
